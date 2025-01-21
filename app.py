@@ -1,16 +1,16 @@
 from flask import Flask, request, jsonify
 from models.sentiment_classifier import SentimentAnalyzer
-from models.type_classifier import EnhancedKeywordClassifier
+from models.category_classifier import ZeroShotCategoryClassifier
 
 app = Flask(__name__)
 
 # Initialize models
 sentiment_analyzer = SentimentAnalyzer()
-keyword_classifier = EnhancedKeywordClassifier()
+category_classifier = ZeroShotCategoryClassifier()
 
 @app.route('/')
 def home():
-    return "Welcome to the Sentiment and Enhanced Keyword Classification API!"
+    return "Welcome to the Sentiment and Zero-Shot Category Classification API!"
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -25,14 +25,15 @@ def analyze():
         # Sentiment analysis
         sentiment_result = sentiment_analyzer.analyze_sentiment(text)
 
-        # Keyword classification
-        keyword_result = keyword_classifier.classify(text)
-        print(keyword_result)
+        # Category classification
+        classification_result = category_classifier.classify(text)
+
         # Response
         response = {
             "text": text,
             "sentiment": sentiment_result,
-            "classification": keyword_result
+            "classification": classification_result["category"],
+            "confidence": classification_result["confidence"],
         }
         return jsonify(response)
 
