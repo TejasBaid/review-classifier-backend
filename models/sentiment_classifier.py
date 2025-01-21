@@ -8,7 +8,7 @@ import kagglehub
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
-# Load RoBERTa sentiment analysis pipeline
+
 
 
 class SentimentAnalyzer:
@@ -32,4 +32,4 @@ class SentimentAnalyzer:
         print(scores_dict)
 
         sent_pipeline = pipeline("sentiment-analysis")
-        print(sent_pipeline('I love sentiment analysis!'))
+        return sent_pipeline(text)

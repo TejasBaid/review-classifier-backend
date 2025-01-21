@@ -1,32 +1,43 @@
-import numpy as np 
-import pandas as pd 
+from flask import Flask, request, jsonify
+from models.sentiment_classifier import SentimentAnalyzer
+from models.type_classifier import EnhancedKeywordClassifier
 
-from transformers import pipeline
-import nltk
-import kagglehub
-from transformers import AutoTokenizer
-from transformers import AutoModelForSequenceClassification
-from scipy.special import softmax
+app = Flask(__name__)
 
+# Initialize models
+sentiment_analyzer = SentimentAnalyzer()
+keyword_classifier = EnhancedKeywordClassifier()
 
-nltk.download('averaged_perceptron_tagger_eng')
+@app.route('/')
+def home():
+    return "Welcome to the Sentiment and Enhanced Keyword Classification API!"
 
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    try:
+        # Parse input JSON
+        data = request.get_json()
+        text = data.get("text", "")
 
-MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
-tokenizer = AutoTokenizer.from_pretrained(MODEL)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+        if not text:
+            return jsonify({"error": "Text field is required"}), 400
 
+        # Sentiment analysis
+        sentiment_result = sentiment_analyzer.analyze_sentiment(text)
 
-encoded_text = tokenizer("Truly a sad day", return_tensors='pt')
-output = model(**encoded_text)
-scores = output[0][0].detach().numpy()
-scores = softmax(scores)
-scores_dict = {
-    'roberta_neg' : scores[0],
-    'roberta_neu' : scores[1],
-    'roberta_pos' : scores[2]
-}
-print(scores_dict)
+        # Keyword classification
+        keyword_result = keyword_classifier.classify(text)
+        print(keyword_result)
+        # Response
+        response = {
+            "text": text,
+            "sentiment": sentiment_result,
+            "classification": keyword_result
+        }
+        return jsonify(response)
 
-sent_pipeline = pipeline("sentiment-analysis")
-print(sent_pipeline('I love sentiment analysis!'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
