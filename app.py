@@ -2,7 +2,11 @@ from flask import Flask, request, jsonify
 from models.sentiment_classifier import SentimentAnalyzer
 from models.category_classifier import ZeroShotCategoryClassifier
 
+from flask_cors import CORS
+
 app = Flask(__name__)
+CORS(app) 
+
 
 # Initialize models
 sentiment_analyzer = SentimentAnalyzer()
